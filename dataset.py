@@ -1,14 +1,18 @@
+# +
 import numpy as np
 import pandas as pd
 from edge_detect import normalize, detect_lines
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset\
+
 import torch.nn.functional as F
 import os
 from tqdm import tqdm
 
 
-def das_to_numpy(f, data_dir):
+# -
+
+def das_to_numpy(data_dir, f):
     new_name = os.path.join(data_dir, "FBE_sensor")
     f = f.replace("sensor", "")
     f = f.replace(".png", "")
@@ -17,7 +21,7 @@ def das_to_numpy(f, data_dir):
     f = f.replace("End", "")
     f = f.replace("0.0_30.0", "0s-30s")
     f = f.replace("30.0_60.0", "30s-60s")
-    f = new_name + f + "_10-200Hz.npy"
+    f = new_name + f + "_0.1-10Hz.npy"
     return f
 
 def compile_dataset(excel_path, data_dir, save_path = "data.pt"):
@@ -66,8 +70,11 @@ def compile_dataset(excel_path, data_dir, save_path = "data.pt"):
     counts = torch.tensor(counts)
     labels = torch.tensor(labels)
     torch.save({"imgs": imgs, "ids": ids, "counts": counts, "labels": labels}, save_path)
-    
-    
+
+
+compile_dataset("../das_gopro_mapping_conf0.4.xlsx", "../DAS_data")
+#FBE_sensor_2024-11-23T232121-0800_30s-60s_0.1-10Hz.npy
+
 class DAS_Dataset(torch.utils.data.Dataset):
     def __init__(self, imgs, counts, labels, ids, transforms = lambda x: x, num_count_classes = 7, num_label_classes = 8):
         self.imgs = imgs
@@ -92,4 +99,4 @@ class DAS_Dataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.imgs)
-    
+
